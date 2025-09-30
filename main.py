@@ -1,21 +1,22 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
+import os
 
 app = FastAPI()
 
 # Allow frontend to connect (CORS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Update to your frontend URL after deployment
+    allow_origins=["https://campaign-analytics-frontend.vercel.app"], # Frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# PostgreSQL connection
-DATABASE_URL = "postgresql://postgres:sakshi@localhost/campaign_db"
+# PostgreSQL connection using Render's DATABASE_URL
+DATABASE_URL = os.environ.get("DATABASE_URL")  # Render provides this
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -46,5 +47,4 @@ def get_campaigns(status: str = None):
             ]
             return campaigns
     except Exception as e:
-        from fastapi import HTTPException
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
